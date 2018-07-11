@@ -1,14 +1,15 @@
 # Maintainer: Lukas Werling <lukas.werling@gmail.com>
 pkgname=elm-platform
 pkgver=0.18.0
-pkgrel=3
+pkgrel=4
 pkgdesc="Bundle of all core development tools for the Elm language."
 arch=('i686' 'x86_64')
 url="http://elm-lang.org"
 license=('BSD3')
 depends=('gmp' 'zlib')
 makedepends=('stack-static' 'patchelf')
-conflicts=('nodejs-elm')
+conflicts=('nodejs-elm' 'elm-platform-bin')
+provides=('elm-platform')
 source=(
   elm-compiler-${pkgver}.zip::https://github.com/elm-lang/elm-compiler/archive/${pkgver}.zip
   elm-package-${pkgver}.zip::https://github.com/elm-lang/elm-package/archive/${pkgver}.zip
@@ -25,19 +26,23 @@ sha256sums=('911109bbedf13c5a5c154ff8b60087b43cfd8be5e165df09b4e8f532a9f22fcd'
             'SKIP')
 
 prepare() {
+  mkdir -p .stack
+
   cd "$srcdir"
 
-  ln -sf elm-compiler-${pkgver} elm-compiler
+  ln -sf compiler-${pkgver} elm-compiler
   ln -sf elm-package-${pkgver} elm-package
   ln -sf elm-make-${pkgver} elm-make
   ln -sf elm-reactor-${pkgver} elm-reactor
   ln -sf elm-repl-${pkgver} elm-repl
+  ln -sf ../.stack .stack
 }
 
 build() {
   cd "$srcdir"
 
-  stack build --install-ghc
+  stack setup --stack-root "${PWD}/.stack"
+  stack build --stack-root "${PWD}/.stack"
 
   binpath="$(stack path --local-install-root)/bin"
   for bin in elm elm-make elm-package elm-reactor elm-repl; do
@@ -56,6 +61,8 @@ package() {
   install -Dm755 "$binpath/elm-repl"    "$pkgdir/usr/bin/elm-repl"
 
   install -Dm644 "elm-compiler/LICENSE" "$pkgdir/usr/share/licenses/elm-platform/LICENSE"
+
+  rm -r ../.stack
 }
 
 # vim:set ts=2 sw=2 et:
