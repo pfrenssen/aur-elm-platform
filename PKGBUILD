@@ -26,7 +26,7 @@ sha256sums=('911109bbedf13c5a5c154ff8b60087b43cfd8be5e165df09b4e8f532a9f22fcd'
             'SKIP')
 
 prepare() {
-  mkdir -p .stack
+  mkdir -p $startdir.stack
 
   cd "$srcdir"
 
@@ -35,14 +35,14 @@ prepare() {
   ln -sf elm-make-${pkgver} elm-make
   ln -sf elm-reactor-${pkgver} elm-reactor
   ln -sf elm-repl-${pkgver} elm-repl
-  ln -sf ../.stack .stack
+  ln -sf $startdir/.stack .stack
 }
 
 build() {
   cd "$srcdir"
 
-  stack setup --stack-root "${PWD}/.stack"
-  stack build --stack-root "${PWD}/.stack"
+  stack setup --stack-root "$startdir/.stack"
+  stack build --stack-root "$startdir/.stack"
 
   binpath="$(stack path --local-install-root)/bin"
   for bin in elm elm-make elm-package elm-reactor elm-repl; do
@@ -62,7 +62,7 @@ package() {
 
   install -Dm644 "elm-compiler/LICENSE" "$pkgdir/usr/share/licenses/elm-platform/LICENSE"
 
-  rm -r ../.stack
+  rm -r $startdir/.stack
 }
 
 # vim:set ts=2 sw=2 et:
